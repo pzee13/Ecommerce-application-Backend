@@ -142,6 +142,9 @@ const loginUser = async (req, res) => {
     // Sign in with Supabase
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
+    console.log("Supabase response data:", data);
+        console.log("Supabase response error:", error);
+
     if (error) {
         console.log("error",error)
       return res.status(400).json({ error: error.message });
@@ -171,7 +174,7 @@ const loginUser = async (req, res) => {
 
     // Save session in MongoDB
     const userSession = new Session({
-        user: user._id,
+        user: dbUser._id,
         loginTime: new Date(),
         ipAddress: req.ip,
       });
@@ -188,6 +191,8 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
     const { userId } = req.session;
+
+    console.log(userId,"user logging out");
   
     try {
       // Update the session with logout time

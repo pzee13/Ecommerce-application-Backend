@@ -1,7 +1,7 @@
 const Product = require('../models/ProductModel');
 const Order = require('../models/OrderModel');
 
-// Get user's cart (for simplicity, we'll assume it's a single session cart)
+
 const getCart = async (req, res) => {
   try {
     const { userId } = req.session;
@@ -19,7 +19,7 @@ const getCart = async (req, res) => {
   }
 };
 
-// Add a product to the cart
+
 const addToCart = async (req, res) => {
   const { productId, quantity } = req.body;
   const { userId } = req.session;
