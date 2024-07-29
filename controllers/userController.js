@@ -218,9 +218,12 @@ const loginUser = async (req, res) => {
       if (!isMatch) {
         return res.status(400).json({ error: 'Invalid credentials' });
       }
+      
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
+
+      console.log(ipAddress,"Ip")
   
-      // Store session information
-      const token = data.session.access_token; // Assuming the token is stored in session.access_token
+      const token = data.session.access_token;
 
       console.log(token,"token issssssssssssssssssssssssss")
   
@@ -232,7 +235,7 @@ const loginUser = async (req, res) => {
       const userSession = new Session({
         user: dbUser._id,
         loginTime: new Date(),
-        ipAddress: req.ip,
+        ipAddress: ipAddress,
         token, // Save token for future validation
       });
   
@@ -283,24 +286,27 @@ const loginUser = async (req, res) => {
 
 
 const logoutUser = async (req, res) => {
-    const { userId } = req.session;
+    const token = req.headers.authorization?.split(' ')[1]; // Extract token from Authorization header
 
-    console.log(userId,"user logging out");
-  
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
-      // Update the session with logout time
-      await Session.findOneAndUpdate(
-        { user: userId, logoutTime: null },
-        { logoutTime: new Date() }
-      );
-  
-      req.session.destroy((err) => {
-        if (err) {
-          return res.status(500).json({ error: 'Could not log out user' });
+        // Sign out from Supabase
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+            return res.status(500).json({ error: 'Failed to log out from Supabase' });
         }
-  
+
+        // Optionally, remove the session record from MongoDB if needed
+        await Session.findOneAndUpdate(
+            { token },
+            { logoutTime: new Date() }
+        );
+
         res.json({ message: 'User logged out successfully' });
-      });
     } catch (error) {
       res.status(500).json({ error: 'Server error' });
     }

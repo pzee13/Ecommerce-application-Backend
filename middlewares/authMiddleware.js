@@ -2,7 +2,8 @@ const supabase  = require('../config/supabaseClient');
 const Session = require('../models/SessionModel');
 
 const checkAuth = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Expecting 'Bearer <token>'
+    //Bearer token
+  const token = req.headers.authorization?.split(' ')[1]; 
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -10,7 +11,7 @@ const checkAuth = async (req, res, next) => {
   console.log(token,"token")
 
   try {
-    // Verify token with Supabase
+
     const { data, error } = await supabase.auth.getUser(token);
 
       
@@ -23,7 +24,6 @@ const checkAuth = async (req, res, next) => {
 
 
 
-    // Optionally, fetch session details from MongoDB
     const session = await Session.findOne({ token });
 
     if (!session) {
