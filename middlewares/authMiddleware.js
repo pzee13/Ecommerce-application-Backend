@@ -1,26 +1,41 @@
-const supabase = require('../config/supabaseClient');
+const supabase  = require('../config/supabaseClient');
+const Session = require('../models/SessionModel');
 
 const checkAuth = async (req, res, next) => {
-  console.log("checking auth");
-  const sessionId = req.session.userId;
-  console.log(sessionId,"sess");
+  const token = req.headers.authorization?.split(' ')[1]; // Expecting 'Bearer <token>'
 
-  if (!sessionId) {
+  if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  console.log(token,"token")
 
-  // Verify session with Supabase
-  const { data, error } = await supabase.auth.getSession(sessionId);
-  console.log(data)
+  try {
+    // Verify token with Supabase
+    const { data, error } = await supabase.auth.getUser(token);
 
-  if (error || !data) {
-    return res.status(401).json({ error: 'Unauthorized' });
+      
+    console.log("Supabase response data ayt:", data);
+    console.log("Supabase response errorvayth:", error);
+
+        if (error || !data.user) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+
+
+
+    // Optionally, fetch session details from MongoDB
+    const session = await Session.findOne({ token });
+
+    if (!session) {
+      return res.status(401).json({ error: 'Session not found' });
+    }
+
+    
+    next();
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    res.status(500).json({ error: 'Server error' });
   }
-
-  req.user = data.session.user;
-  console.log(req.user,"user");
-  next();
 };
 
 module.exports = checkAuth;
-

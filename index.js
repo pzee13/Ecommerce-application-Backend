@@ -101,7 +101,10 @@ store.on('error', function (error) {
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173', // Adjust as needed
+    credentials: true,
+  }));
 app.use(morgan('dev'));
 
 // Session configuration

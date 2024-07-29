@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { registerUser, loginUser,logoutUser } = require('../controllers/userController');
+const { registerUser, loginUser, logoutUser } = require('../controllers/userController');
 const checkAuth = require('../middlewares/authMiddleware');
 
 
@@ -10,6 +10,8 @@ router.post('/register', registerUser);
 
 // Log in an existing user
 router.post('/login', loginUser);
+
+// router.post('/store-session', storeSession);
 
 router.post('/logout',checkAuth, logoutUser);
 

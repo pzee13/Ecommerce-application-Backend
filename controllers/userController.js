@@ -134,60 +134,153 @@ const registerUser = async (req, res) => {
     
 
 
+// const loginUser = async (req, res) => {
+//   const { email, password } = req.body;
+//   console.log("Request received for login");
+
+//   try {
+//     // Sign in with Supabase
+//     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+//     console.log("Supabase response data:", data);
+//         console.log("Supabase response error:", error);
+
+//     if (error) {
+//         console.log("error",error)
+//       return res.status(400).json({ error: error.message });
+//     }
+
+//     const { user } = data;
+
+//     console.log(user,"user")
+
+//     // Fetch the user from MongoDB
+//     const dbUser = await User.findOne({ email });
+
+//     if (!dbUser) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+
+//     // Verify password
+//     const isMatch = await bcrypt.compare(password, dbUser.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ error: 'Invalid dd credentials' });
+//     }
+
+//     // Store session information
+//     req.session.userId = user.id;
+//     req.session.username = dbUser.username;
+//     req.session.role = dbUser.role;
+
+//     // Save session in MongoDB
+//     const userSession = new Session({
+//         user: dbUser._id,
+//         loginTime: new Date(),
+//         ipAddress: req.ip,
+//       });
+  
+//       await userSession.save();
+  
+
+//     res.json({ message: 'Logged in successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// };
+
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-  console.log("Request received for login");
+    const { email, password } = req.body;
+    console.log("Request received for login");
+  
+    try {
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  
+      console.log("Supabase response data:", data);
+      console.log("Supabase response error:", error);
+  
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+  
+      const { user } = data;
+  
+      // Fetch the user from MongoDB
+      const dbUser = await User.findOne({ email });
+  
+      if (!dbUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Verify password
+      const isMatch = await bcrypt.compare(password, dbUser.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Invalid credentials' });
+      }
+  
+      // Store session information
+      const token = data.session.access_token; // Assuming the token is stored in session.access_token
 
-  try {
-    // Sign in with Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    console.log("Supabase response data:", data);
-        console.log("Supabase response error:", error);
-
-    if (error) {
-        console.log("error",error)
-      return res.status(400).json({ error: error.message });
-    }
-
-    const { user } = data;
-
-    console.log(user,"user")
-
-    // Fetch the user from MongoDB
-    const dbUser = await User.findOne({ email });
-
-    if (!dbUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Verify password
-    const isMatch = await bcrypt.compare(password, dbUser.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid dd credentials' });
-    }
-
-    // Store session information
-    req.session.userId = user.id;
-    req.session.username = dbUser.username;
-    req.session.role = dbUser.role;
-
-    // Save session in MongoDB
-    const userSession = new Session({
+      console.log(token,"token issssssssssssssssssssssssss")
+  
+      req.session.userId = user.id;
+      req.session.username = dbUser.username;
+      req.session.role = dbUser.role;
+  
+      // Save session in MongoDB
+      const userSession = new Session({
         user: dbUser._id,
         loginTime: new Date(),
         ipAddress: req.ip,
+        token, // Save token for future validation
       });
   
       await userSession.save();
   
+      res.json({ message: 'Logged in successfully', token });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  
+//   const storeSession = async (req, res) => {
+//     const { token } = req.body;
 
-    res.json({ message: 'Logged in successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
+//     console.log("Request received for StoreSession");
+//     console.log("Token received:", token); // Log token to ensure it's correct
+  
+//     try {
+//         // Verify token with Supabase
+//         const { data, error } = await supabase.auth.getSession(token);
+
+//         console.log("Supabase response data sess:", data);
+//         console.log("Supabase response error sess:", error);
+  
+//         if (error || !data.session) {
+//             return res.status(401).json({ error: 'Invalid or expired token' });
+//         }
+  
+//         const { user } = data.session;
+  
+//         // Create a new session record in MongoDB
+//         const newSession = new Session({
+//             user: user.id,
+//             loginTime: new Date(),
+//             token,
+//             ipAddress: req.ip,
+//         });
+  
+//         await newSession.save();
+  
+//         res.json({ message: 'Session stored successfully' });
+//     } catch (error) {
+//         console.error('Error storing session:', error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
+
 
 const logoutUser = async (req, res) => {
     const { userId } = req.session;
