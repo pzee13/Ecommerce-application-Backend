@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const sessionSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    token: { type: String, required: true, unique: true }, // Store Supabase token
+    token: { type: String, required: true, unique: true }, 
     loginTime: {
         type: Date,
         default: Date.now,
@@ -11,7 +11,7 @@ const sessionSchema = new mongoose.Schema({
     ipAddress: String,
 }, { timestamps: true });
 
-// Optional: Add an index on the token for faster lookups
+
 sessionSchema.index({ token: 1 });
 
 const Session = mongoose.model('Session', sessionSchema);

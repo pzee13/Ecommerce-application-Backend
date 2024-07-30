@@ -4,7 +4,6 @@ const { addToCart, getCart ,updateCart,removeFromCart } = require('../controller
 
 const router = express.Router();
 
-// Add a product to the cart
 router.get('/', checkAuth, getCart);
 router.post('/', checkAuth, addToCart);
 router.patch('/update', checkAuth, updateCart);

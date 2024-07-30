@@ -1,4 +1,6 @@
 const Session = require('../models/SessionModel');
+const supabase = require('../config/supabaseClient');
+const User = require('../models/UserModel');
 
 const getAllSessions = async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1]; 

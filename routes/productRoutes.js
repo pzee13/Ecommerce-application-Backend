@@ -10,14 +10,5 @@ router.post('/', checkAuth, checkRole('admin'), createProduct);
 router.put('/:id', checkAuth, checkRole('admin'), updateProduct);
 router.delete('/:id', checkAuth, checkRole('admin'), deleteProduct);
 
-// Sample test route to check authentication
-router.post('/test-auth', checkAuth, (req, res) => {
-  res.send('Authenticated successfully');
-});
-
-// Sample test route to check role
-router.post('/test-role', checkAuth, checkRole('admin'), (req, res) => {
-  res.send('Role verified successfully');
-});
 
 module.exports = router;
